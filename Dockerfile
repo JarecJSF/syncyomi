@@ -1,20 +1,40 @@
 # Etapa de construcción
-FROM golang:1.21-alpine AS builder
+FROM node:18-alpine AS web-builder
 
-# Instalar dependencias necesarias
+WORKDIR /app/web
+COPY web/package.json web/pnpm-lock.yaml ./
+RUN npm install -g pnpm && pnpm install
+COPY web/ ./
+RUN pnpm build
+
+# Etapa de construcción Go
+FROM golang:1.21-alpine AS go-builder
+
+# Instalar dependencias
 RUN apk add --no-cache git ca-certificates tzdata
 
 WORKDIR /app
 
-# Copiar archivos de dependencias
+# Copiar archivos go
 COPY go.mod go.sum ./
 RUN go mod download
 
 # Copiar código fuente
 COPY . .
 
-# Construir la aplicación
-RUN CGO_ENABLED=0 GOOS=linux go build -a -ldflags '-extldflags "-static"' -o syncyomi ./cmd/syncyomi
+# Copiar build web
+COPY --from=web-builder /app/web/dist ./web/dist
+
+# Variables de build
+ARG VERSION=latest
+ARG REVISION=unknown
+ARG BUILDTIME=unknown
+
+# Construir la aplicación (usando main.go en la raíz)
+RUN CGO_ENABLED=0 GOOS=linux go build \
+    -ldflags "-s -w -X main.version=${VERSION} -X main.commit=${REVISION} -X main.date=${BUILDTIME}" \
+    -o syncyomi \
+    main.go
 
 # Etapa final
 FROM alpine:latest
@@ -35,11 +55,10 @@ USER syncyomi
 WORKDIR /app
 
 # Copiar binario desde etapa de construcción
-COPY --from=builder /app/syncyomi .
+COPY --from=go-builder /app/syncyomi .
 
 # Exponer puerto
 EXPOSE 8282
 
 # Configurar punto de entrada
 ENTRYPOINT ["./syncyomi"]
-CMD ["--config=/config"]
