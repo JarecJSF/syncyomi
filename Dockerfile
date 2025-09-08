@@ -9,8 +9,8 @@ RUN npm install -g pnpm@7.13.4
 # CREAR .npmrc PARA IGNORAR ERRORES DE DEPENDENCIAS DE PARES
 RUN echo "strict-peer-dependencies=false" > .npmrc
 
-# Instalar dependencias ignorando problemas de peer dependencies
-RUN pnpm install --prod
+# INSTALAR TODAS LAS DEPENDENCIAS (production + development)
+RUN pnpm install
 COPY web/ .
 RUN pnpm run build
 
