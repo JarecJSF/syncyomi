@@ -9,8 +9,13 @@ RUN npm install -g pnpm@7.13.4
 # CREAR .npmrc PARA IGNORAR ERRORES DE DEPENDENCIAS DE PARES
 RUN echo "strict-peer-dependencies=false" > .npmrc
 
-# INSTALAR TODAS LAS DEPENDENCIAS (production + development)
+# Instalar todas las dependencias
 RUN pnpm install
+
+# FORZAR ACTUALIZACIÓN DE DEPENDENCIAS CLAVE
+RUN pnpm update vue-tsc@latest vite-plugin-vuetify@2.1.2
+
+# Copiar el resto del código y construir
 COPY web/ .
 RUN pnpm run build
 
