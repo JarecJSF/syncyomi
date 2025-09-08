@@ -3,10 +3,13 @@ FROM node:18.12.0-alpine3.16 AS web-builder
 WORKDIR /web
 COPY web/package.json web/pnpm-lock.yaml ./
 
-# CORRECCIÓN CLAVE: Usar pnpm v7.13.4 (compatible con el lockfile existente)
+# Instalar pnpm v7.13.4 (compatible con el lockfile existente)
 RUN npm install -g pnpm@7.13.4
 
-# Instalar dependencias SIN --frozen-lockfile (permitir actualización del lockfile)
+# CREAR .npmrc PARA IGNORAR ERRORES DE DEPENDENCIAS DE PARES
+RUN echo "strict-peer-dependencies=false" > .npmrc
+
+# Instalar dependencias ignorando problemas de peer dependencies
 RUN pnpm install --prod
 COPY web/ .
 RUN pnpm run build
