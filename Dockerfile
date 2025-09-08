@@ -66,7 +66,8 @@ LABEL org.opencontainers.image.source="https://github.com/syncyomi/syncyomi"
 
 ENV HOME="/config" \
     XDG_CONFIG_HOME="/config" \
-    XDG_DATA_HOME="/config"
+    XDG_DATA_HOME="/config" \
+    SYNCYOMI_PORT="8080"
 
 RUN apk add --no-cache ca-certificates curl tzdata jq
 
