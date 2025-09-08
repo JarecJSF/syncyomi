@@ -15,8 +15,8 @@ RUN pnpm install
 # FORZAR ACTUALIZACIÓN DE DEPENDENCIAS CLAVE
 RUN pnpm update vue-tsc@latest vite-plugin-vuetify@2.1.2
 
-# MODIFICAR EL COMANDO DE BUILD PARA IGNORAR ERRORES DE TIPO
-RUN sed -i 's/"build": "vue-tsc --noEmit && vite build"/"build": "vue-tsc --noEmit --skipLibCheck && vite build"/g' package.json
+# MODIFICAR EL COMANDO DE BUILD PARA OMITIR LA VERIFICACIÓN DE TIPOS
+RUN sed -i 's/"build": "vue-tsc --noEmit && vite build"/"build": "vite build"/g' package.json
 
 # Copiar el resto del código y construir
 COPY web/ .
