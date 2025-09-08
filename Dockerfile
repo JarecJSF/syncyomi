@@ -3,7 +3,7 @@ FROM node:18.12.0 AS web-builder
 WORKDIR /web
 COPY web/package.json web/pnpm-lock.yaml ./
 # install pnpm
-RUN npm install -g pnpm
+RUN npm install -g pnpm@8.8.1
 RUN pnpm install --frozen-lockfile --prod
 COPY web/ .
 RUN pnpm run build
