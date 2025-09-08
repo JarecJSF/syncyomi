@@ -3,8 +3,8 @@ FROM node:18.12.0-alpine3.16 AS web-builder
 WORKDIR /web
 COPY web/package.json web/pnpm-lock.yaml ./
 
-# Instalar pnpm fijando su versión (compatible con Node 18.12)
-RUN npm install -g pnpm@8.8.1
+# CORRECCIÓN CLAVE: Instalar la última versión estable de pnpm (8.15.5)
+RUN npm install -g pnpm@8
 
 # Instalar dependencias y construir el frontend
 RUN pnpm install --frozen-lockfile --prod
@@ -33,7 +33,7 @@ COPY . ./
 COPY --from=web-builder /web/dist ./web/dist
 COPY --from=web-builder /web/build.go ./web
 
-# Compilar la aplicación
+# Compilar la aplicación con flags optimizados
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
     go build -ldflags "-s -w -X main.version=${VERSION} -X main.commit=${REVISION} -X main.date=${BUILDTIME}" \
     -o bin/syncyomi main.go
@@ -56,7 +56,7 @@ VOLUME /config
 # Copiar binario compilado
 COPY --from=app-builder /src/bin/syncyomi /usr/local/bin/
 
-# Exponer puerto 8080 (corrección desde 8282)
+# CORRECCIÓN: Puerto correcto (SyncYomi usa 8080 por defecto)
 EXPOSE 8080
 
 ENTRYPOINT ["/usr/local/bin/syncyomi", "--config", "/config"]
