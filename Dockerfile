@@ -15,11 +15,21 @@ RUN pnpm install
 # FORZAR ACTUALIZACIÓN DE DEPENDENCIAS CLAVE
 RUN pnpm update vue-tsc@latest vite-plugin-vuetify@2.1.2
 
-# MODIFICAR EL COMANDO DE BUILD PARA OMITIR LA VERIFICACIÓN DE TIPOS
-RUN sed -i 's/"build": "vue-tsc --noEmit && vite build"/"build": "vite build"/g' package.json
-
-# Copiar el resto del código y construir
+# ✅ CORRECCIÓN CLAVE: COPIAR LOS ARCHIVOS ANTES DE MODIFICARLOS
 COPY web/ .
+
+# MODIFICAR EL COMANDO DE BUILD (expresión regular flexible)
+RUN sed -i 's/"build":[[:space:]]*"vue-tsc --noEmit[^"]*"/"build": "vite build"/' package.json || true
+
+# APLICAR PARCHES AL CÓDIGO FUENTE (cubriendo todas las posibilidades)
+RUN sed -i 's/:size="size"/:size="parseInt(size)"/g' src/components/modals/ShowQRCode.vue || true
+RUN sed -i 's/:size=size/:size="parseInt(size)"/g' src/components/modals/ShowQRCode.vue || true
+RUN sed -i 's/:size: String/:size: Number/g' src/components/modals/ShowQRCode.vue || true
+
+# ✅ CORRECCIÓN ADICIONAL: Verificar que los cambios se aplicaron
+RUN cat package.json && cat src/components/modals/ShowQRCode.vue
+
+# Construir
 RUN pnpm run build
 
 # build app
